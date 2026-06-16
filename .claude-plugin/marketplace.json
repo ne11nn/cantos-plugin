@@ -1,0 +1,19 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "cantos-plugin",
+  "description": "The Cantos system, packaged as a one-command Claude Code plugin.",
+  "version": "1.0.0",
+  "owner": { "name": "Brian Chen", "url": "https://github.com/ne11nn" },
+  "plugins": [
+    {
+      "name": "cantos",
+      "description": "A self-improving, multi-agent assistant orchestrator for Claude Code. Scaffold the full writable system with /cantos:init, or run it for one session with /cantos:start.",
+      "version": "1.0.0",
+      "source": "./",
+      "category": "productivity",
+      "homepage": "https://github.com/ne11nn/cantos-plugin",
+      "author": { "name": "Brian Chen", "url": "https://github.com/ne11nn" },
+      "tags": ["orchestrator","multi-agent","assistant","self-improving","skills","claude-code"]
+    }
+  ]
+}
