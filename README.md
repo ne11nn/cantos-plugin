@@ -65,6 +65,16 @@ Cantos is built to sharpen over time instead of decaying. Every session can fold
 - **Skills**, surfaced in every session: design and UI, motion, frontend engineering, codebase architecture, research, and writing-craft. A few system-coupled skills (`wrap`, `name-session`, `write-like-me`, `ai-detect`, `impeccable`) are not exposed as standalone plugin skills because they need the scaffolded system to work; they ship inside `system/` and activate after `/cantos:init`.
 - **The `browser-agent`** for general browser automation (pair with the `playwright-cli` skill).
 
+## Security and transparency
+
+Everything the plugin runs is plain, readable markdown and shell — no compiled binaries, no black boxes.
+
+- **The only code that runs automatically is the SessionStart hook** (`hooks/session-start`, fully commented). It reads your project's `CLAUDE.md` to decide whether to stay silent, prints a one-line usage notice, and exits. It makes **no network calls** and **writes no files**.
+- **`/cantos:init` writes files only into the project directory you run it in** — never to shared or system locations, and nothing outside that directory. It first lists exactly what it will create, **refuses if any name collides** with an existing file, and asks you to confirm before writing.
+- **Network calls:** the assistants use Claude Code's built-in web search/fetch (Anthropic) for research. Two bundled tools reach other servers, and **only when you explicitly run them**: `system/tools/cantos/flux.py` (image generation via the NVIDIA NIM API, with your own key) and the opt-in, unwired `system/tools/cantos/brain_update_hook.py` (Anthropic API). Neither runs on its own.
+- **No telemetry.** The plugin gathers and sends nothing about you or your usage.
+- **No elevated permissions.** It does not require or request `--dangerously-skip-permissions` / bypass-permissions mode.
+
 ## Privacy
 
 After `/cantos:init`, the scaffolded system holds your personal context (`context/me.md`, `context/work.md`) and, if you use the voice features, your writing samples. Keep that project in a **private** repo. The plugin itself ships no personal data.
