@@ -20,6 +20,41 @@ That's it. The plugin's skills and the `browser-agent` are now available in ever
 | `/cantos:init` | Scaffolds the **entire writable system** into your current project as real, git-tracked files (CLAUDE.md, the assistants, workflows, references, the self-improvement spine), then runs a short setup interview to personalize it. | The real install. Run once per project. This is the only mode where the system **persists and evolves** — `/wrap` and brain-file updates stick on disk, and every future session in that directory starts as Cantos automatically. |
 | `/cantos:start` | Adopts the Cantos orchestrator for the **current session only**, reading the bundled system in place. Writes nothing. | A quick try, or a one-off you don't want to scaffold. |
 
+## What it looks like
+
+Install it, then in any project (a fresh, empty folder is cleanest):
+
+```text
+> /cantos:init
+
+Scaffolding the Cantos system here... done. CLAUDE.md, .assistants/, workflows/,
+references/, and registry/ are now real files in your project.
+
+Before I route anything, let me set the system up for you. A few quick questions:
+
+  What do you work on, and what should I optimize for?
+  > Founder building a fintech app. Ship fast, protect my focus time.
+
+  Where does your work live (docs, tasks, code, comms)?
+  > Linear, GitHub, Notion, Gmail.
+
+  Which starter assistants do you want? (research/writing, admin, engineering)
+  > Keep all three, rename the engineer to "ship".
+
+Done. context/me.md and context/work.md written, assistants tuned, marker cleared.
+```
+
+From then on, every session you start in that folder begins as Cantos, and it routes each request to the assistant that owns it:
+
+```text
+> draft a cold email to a design partner and hold 30 minutes tomorrow to call them
+
+Routing to lyren (admin). Drafting the email and proposing a calendar hold.
+I'll show you both and wait for your OK before sending or creating anything.
+```
+
+Prefer not to scaffold? Run `/cantos:start` and it acts as the orchestrator for that one session, reading the bundled system in place and writing nothing.
+
 ## What "self-improving" means
 
 Cantos is built to sharpen over time instead of decaying. Every session can fold what it learned back into its own instructions: `/wrap` reviews the conversation and updates the relevant brain file, workflow, or the registry, routed through a three-question test that keeps the instructions short instead of letting rules pile up. That loop only persists when the files are real on disk, which is why `/cantos:init` (not the ephemeral `/cantos:start`) is the way to actually live in the system.
