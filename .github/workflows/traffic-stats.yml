@@ -1,0 +1,42 @@
+# Accumulates GitHub repo traffic (clones + views) into .stats/ over time.
+# GitHub only keeps 14 days of traffic; this snapshots daily and merges a date-keyed
+# history so lifetime totals survive. Lifetime totals are printed in the run log.
+# The traffic API needs a token with push access. The default GITHUB_TOKEN usually
+# works; if it 403s, add a repo-scoped PAT as a secret and use it for GH_TOKEN.
+name: traffic-stats
+
+on:
+  schedule:
+    - cron: "0 3 * * *"   # daily at 03:00 UTC
+  workflow_dispatch:        # lets you run it on demand from the Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Accumulate clones + views (lifetime)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          mkdir -p .stats
+          for kind in clones views; do
+            gh api "repos/${GITHUB_REPOSITORY}/traffic/${kind}" > "/tmp/${kind}.json" \
+              || { echo "traffic API unavailable for ${kind} (token lacks push access?)"; exit 0; }
+            jq --arg k "$kind" '.[$k] | map({ (.timestamp[0:10]): {count, uniques} }) | add // {}' \
+              "/tmp/${kind}.json" > "/tmp/${kind}.new.json"
+            [ -f ".stats/${kind}.json" ] || echo '{}' > ".stats/${kind}.json"
+            jq -s '.[0] * .[1]' ".stats/${kind}.json" "/tmp/${kind}.new.json" > "/tmp/${kind}.merged.json"
+            mv "/tmp/${kind}.merged.json" ".stats/${kind}.json"
+            echo "${kind} lifetime total: $(jq '[.[].count] | add // 0' ".stats/${kind}.json")"
+            echo "${kind} sum-of-daily-uniques: $(jq '[.[].uniques] | add // 0' ".stats/${kind}.json")"
+          done
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .stats
+          git commit -m "chore: daily traffic snapshot" || { echo "no new data"; exit 0; }
+          git push
