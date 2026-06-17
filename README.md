@@ -1,8 +1,28 @@
 # cantos (plugin)
 
-**The entire [Cantos](https://github.com/ne11nn/cantos) system as a one-command Claude Code plugin.** Cantos is a self-improving, multi-agent personal-assistant operating system: an orchestrator that delegates each request to a specialist assistant, backed by a library of skills and sub-agents. Everything is plain, editable markdown. Nothing is a black box.
+**A self-improving, multi-agent assistant system for Claude Code — installable in one command.**
 
-This is the *installable* form of Cantos. (You can also clone the full template at [ne11nn/cantos](https://github.com/ne11nn/cantos).)
+Most Claude Code setups are one agent with one long prompt. Cantos is an **orchestrator** that routes each request to the specialist assistant that owns it, each with its own skills and sub-agents — all as plain, editable markdown. Nothing is a black box, and it improves itself as you use it.
+
+## How it works
+
+```text
+You
+ │
+ ▼
+Cantos — the orchestrator. Reads each request and routes it to the owner:
+ │
+ ├─▶ folio    research & writing — finding sources, drafting, citations
+ ├─▶ lyren    admin — email, calendar, tasks (always drafts; never sends without your OK)
+ └─▶ pylon    engineering — apps, sites, games, extensions (builds, tests, ships)
+
+      every assistant carries its own skills + sub-agents
+
+/wrap ─▶ after a session, what it learned folds back into the system's own
+         files — so Cantos sharpens over time instead of decaying.
+```
+
+One orchestrator, specialist assistants, a shared library of skills. This is the *installable* form of the full [Cantos](https://github.com/ne11nn/cantos) template, and you can read and edit every file it ships.
 
 ## Install
 
@@ -20,7 +40,7 @@ That's it. The plugin's skills and the `browser-agent` are now available in ever
 | `/cantos:init` | Scaffolds the **entire writable system** into your current project as real, git-tracked files (CLAUDE.md, the assistants, workflows, references, the self-improvement spine), then runs a short setup interview to personalize it. | The real install. Run once per project. This is the only mode where the system **persists and evolves** — `/wrap` and brain-file updates stick on disk, and every future session in that directory starts as Cantos automatically. |
 | `/cantos:start` | Adopts the Cantos orchestrator for the **current session only**, reading the bundled system in place. Writes nothing. | A quick try, or a one-off you don't want to scaffold. |
 
-## What it looks like
+## See it in action
 
 Install it, then in any project (a fresh, empty folder is cleanest):
 
