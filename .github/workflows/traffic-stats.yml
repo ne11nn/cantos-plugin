@@ -1,8 +1,9 @@
 # Accumulates GitHub repo traffic (clones + views) into .stats/ over time.
 # GitHub only keeps 14 days of traffic; this snapshots daily and merges a date-keyed
 # history so lifetime totals survive. Lifetime totals are printed in the run log.
-# The traffic API needs a token with push access. The default GITHUB_TOKEN usually
-# works; if it 403s, add a repo-scoped PAT as a secret and use it for GH_TOKEN.
+# The GitHub Actions GITHUB_TOKEN CANNOT read the traffic API, so this needs a
+# Personal Access Token with repo access stored as a secret named TRAFFIC_TOKEN
+# (classic 'repo' scope, or fine-grained: Contents read/write + Administration read).
 name: traffic-stats
 
 on:
@@ -18,15 +19,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.TRAFFIC_TOKEN }}   # PAT with repo access; used for the traffic API AND to push .stats
       - name: Accumulate clones + views (lifetime)
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.TRAFFIC_TOKEN }}
         run: |
           set -euo pipefail
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "::error::Set a repo secret named TRAFFIC_TOKEN (PAT with repo access). The default GITHUB_TOKEN cannot read the traffic API."
+            exit 1
+          fi
           mkdir -p .stats
           for kind in clones views; do
-            gh api "repos/${GITHUB_REPOSITORY}/traffic/${kind}" > "/tmp/${kind}.json" \
-              || { echo "traffic API unavailable for ${kind} (token lacks push access?)"; exit 0; }
+            if ! gh api "repos/${GITHUB_REPOSITORY}/traffic/${kind}" > "/tmp/${kind}.json"; then
+              echo "::error::traffic API call for ${kind} failed. TRAFFIC_TOKEN needs push access (classic 'repo', or fine-grained Administration: read)."
+              exit 1
+            fi
             jq --arg k "$kind" '.[$k] | map({ (.timestamp[0:10]): {count, uniques} }) | add // {}' \
               "/tmp/${kind}.json" > "/tmp/${kind}.new.json"
             [ -f ".stats/${kind}.json" ] || echo '{}' > ".stats/${kind}.json"
